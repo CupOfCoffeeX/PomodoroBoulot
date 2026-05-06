@@ -20,6 +20,9 @@ export function MainLayout() {
       await win.setSize(new LogicalSize(420, 96));
       await win.setAlwaysOnTop(true);
       await win.setDecorations(false);
+      // On macOS, setDecorations(false) resets the window background to opaque white.
+      // Force it back to fully transparent so the rounded widget shows cleanly.
+      await win.setBackgroundColor([0, 0, 0, 0]);
     } catch {
       // Running in browser during dev — ignore
     }
