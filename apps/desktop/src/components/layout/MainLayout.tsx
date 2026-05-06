@@ -1,11 +1,13 @@
-import { Minimize2 } from 'lucide-react';
+import { LogOut, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { TimerDisplay } from '@/components/timer/TimerDisplay';
 import { TimerControls } from '@/components/timer/TimerControls';
 import { TaskList } from '@/components/tasks/TaskList';
+import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
 import { useTimerStore } from '@/store/timerStore';
 import { useTaskStore } from '@/store/taskStore';
+import { useAuthStore } from '@/store/authStore';
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 
 export function MainLayout() {
@@ -13,6 +15,8 @@ export function MainLayout() {
   const activeTaskId = useTimerStore((s) => s.activeTaskId);
   const tasks = useTaskStore((s) => s.tasks);
   const activeTask = tasks.find((t) => t.id === activeTaskId);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
 
   async function handleCompact() {
     try {
@@ -38,15 +42,28 @@ export function MainLayout() {
           <span className="text-sm font-semibold text-foreground/80 tracking-wide">
             PomodoroBoulot
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCompact}
-            className="gap-2 text-muted-foreground hover:text-foreground border-border/60 hover:border-border"
-          >
-            <Minimize2 className="h-3.5 w-3.5" />
-            Widget
-          </Button>
+          <div className="flex items-center gap-1.5">
+            {user?.role === 'admin' && <CreateUserDialog />}
+            <span className="text-xs text-muted-foreground px-1">{user?.username}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={logout}
+              title="Se déconnecter"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCompact}
+              className="gap-2 text-muted-foreground hover:text-foreground border-border/60 hover:border-border"
+            >
+              <Minimize2 className="h-3.5 w-3.5" />
+              Widget
+            </Button>
+          </div>
         </div>
 
         {/* Timer centered in remaining space */}

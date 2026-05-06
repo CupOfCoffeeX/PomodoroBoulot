@@ -1,10 +1,15 @@
-import type { Task, PomodoroSession, Stats, Dashboard, TaskStatus, SessionType } from '@/types';
+import type { AuthUser, Dashboard, PomodoroSession, SessionType, Stats, Task, TaskStatus } from '@/types';
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('pb_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     ...init,
   });
   if (!res.ok) {
@@ -15,8 +20,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
-// Tasks
 export const api = {
+  auth: {
+    login: (username: string, password: string) =>
+      request<{ token: string; user: AuthUser }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      }),
+    register: (data: { username: string; password: string; role?: 'user' | 'admin' }) =>
+      request<AuthUser>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    me: () => request<AuthUser>('/auth/me'),
+  },
+
   tasks: {
     list: () => request<Task[]>('/tasks'),
     create: (data: { title: string; description?: string; estimatedPomodoros?: number }) =>

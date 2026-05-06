@@ -1,6 +1,13 @@
 export type TaskStatus = 'pending' | 'in_progress' | 'done';
 export type SessionType = 'work' | 'short_break' | 'long_break';
 export type TimerMode = 'work' | 'short_break' | 'long_break';
+export type UserRole = 'user' | 'admin';
+
+export interface AuthUser {
+  id: string;
+  username: string;
+  role: UserRole;
+}
 
 export interface Task {
   id: string;
