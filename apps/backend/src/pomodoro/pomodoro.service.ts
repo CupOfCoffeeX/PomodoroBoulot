@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { SessionType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StartSessionDto } from './dto/start-session.dto';
@@ -8,22 +8,22 @@ import { CompleteSessionDto } from './dto/complete-session.dto';
 export class PomodoroService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCurrent() {
+  async getCurrent(userId: string) {
     return this.prisma.pomodoroSession.findFirst({
-      where: { completed: false, endTime: null },
+      where: { userId, completed: false, endTime: null },
       orderBy: { createdAt: 'desc' },
       include: { taskPomodoros: { include: { task: true } } },
     });
   }
 
-  async start(dto: StartSessionDto) {
-    const existing = await this.getCurrent();
+  async start(dto: StartSessionDto, userId: string) {
+    const existing = await this.getCurrent(userId);
     if (existing) {
       throw new BadRequestException('A session is already running. Complete or reset it first.');
     }
 
     const session = await this.prisma.pomodoroSession.create({
-      data: { type: dto.type ?? SessionType.work },
+      data: { type: dto.type ?? SessionType.work, userId },
     });
 
     if (dto.taskId) {
@@ -39,32 +39,32 @@ export class PomodoroService {
     return session;
   }
 
-  async pause(sessionId: string) {
-    await this.findSessionOrThrow(sessionId);
+  async pause(sessionId: string, userId: string) {
+    await this.findSessionOrThrow(sessionId, userId);
     return this.prisma.pomodoroSession.update({
       where: { id: sessionId },
       data: { paused: true },
     });
   }
 
-  async resume(sessionId: string) {
-    await this.findSessionOrThrow(sessionId);
+  async resume(sessionId: string, userId: string) {
+    await this.findSessionOrThrow(sessionId, userId);
     return this.prisma.pomodoroSession.update({
       where: { id: sessionId },
       data: { paused: false },
     });
   }
 
-  async reset(sessionId: string) {
-    await this.findSessionOrThrow(sessionId);
+  async reset(sessionId: string, userId: string) {
+    await this.findSessionOrThrow(sessionId, userId);
     return this.prisma.pomodoroSession.update({
       where: { id: sessionId },
       data: { endTime: new Date(), completed: false },
     });
   }
 
-  async complete(sessionId: string, dto: CompleteSessionDto) {
-    const session = await this.findSessionOrThrow(sessionId);
+  async complete(sessionId: string, dto: CompleteSessionDto, userId: string) {
+    const session = await this.findSessionOrThrow(sessionId, userId);
 
     const completed = await this.prisma.pomodoroSession.update({
       where: { id: sessionId },
@@ -82,7 +82,6 @@ export class PomodoroService {
           update: { duration: dto.duration },
         });
       }
-
       if (taskIds.length > 0) {
         await this.prisma.task.updateMany({
           where: { id: { in: taskIds } },
@@ -94,15 +93,18 @@ export class PomodoroService {
     return completed;
   }
 
-  async findAll() {
+  async findAll(userId: string) {
     return this.prisma.pomodoroSession.findMany({
+      where: { userId },
       orderBy: { createdAt: 'desc' },
       include: { taskPomodoros: { include: { task: { select: { id: true, title: true } } } } },
     });
   }
 
-  private async findSessionOrThrow(sessionId: string) {
-    const session = await this.prisma.pomodoroSession.findUnique({ where: { id: sessionId } });
+  private async findSessionOrThrow(sessionId: string, userId: string) {
+    const session = await this.prisma.pomodoroSession.findFirst({
+      where: { id: sessionId, userId },
+    });
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
     return session;
   }

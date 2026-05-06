@@ -1,17 +1,21 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { TrackingService } from './tracking.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { JwtPayload } from '../auth/types';
 
+@UseGuards(JwtAuthGuard)
 @Controller('tracking')
 export class TrackingController {
   constructor(private readonly trackingService: TrackingService) {}
 
   @Get('stats')
-  getStats() {
-    return this.trackingService.getStats();
+  getStats(@CurrentUser() user: JwtPayload) {
+    return this.trackingService.getStats(user.sub);
   }
 
   @Get('dashboard')
-  getDashboard() {
-    return this.trackingService.getDashboard();
+  getDashboard(@CurrentUser() user: JwtPayload) {
+    return this.trackingService.getDashboard(user.sub);
   }
 }

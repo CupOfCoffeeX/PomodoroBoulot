@@ -19,6 +19,22 @@ enum SessionType {
   long_break
 }
 
+enum UserRole {
+  user
+  admin
+}
+
+model User {
+  id           String            @id @default(cuid())
+  username     String            @unique
+  passwordHash String
+  role         UserRole          @default(user)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  tasks        Task[]
+  sessions     PomodoroSession[]
+}
+
 model Task {
   id                 String         @id @default(cuid())
   title              String
@@ -29,6 +45,8 @@ model Task {
   order              Int            @default(0)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+  userId             String
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   taskPomodoros      TaskPomodoro[]
 }
 
@@ -39,8 +57,10 @@ model PomodoroSession {
   type          SessionType    @default(work)
   completed     Boolean        @default(false)
   paused        Boolean        @default(false)
-  taskPomodoros TaskPomodoro[]
   createdAt     DateTime       @default(now())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskPomodoros TaskPomodoro[]
 }
 
 model TaskPomodoro {

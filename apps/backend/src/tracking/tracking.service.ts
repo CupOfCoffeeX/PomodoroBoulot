@@ -5,16 +5,16 @@ import { PrismaService } from '../prisma/prisma.service';
 export class TrackingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStats() {
+  async getStats(userId: string) {
     const [totalSessions, completedSessions, totalTasks, completedTasks] = await Promise.all([
-      this.prisma.pomodoroSession.count({ where: { type: 'work' } }),
-      this.prisma.pomodoroSession.count({ where: { type: 'work', completed: true } }),
-      this.prisma.task.count(),
-      this.prisma.task.count({ where: { status: 'done' } }),
+      this.prisma.pomodoroSession.count({ where: { userId, type: 'work' } }),
+      this.prisma.pomodoroSession.count({ where: { userId, type: 'work', completed: true } }),
+      this.prisma.task.count({ where: { userId } }),
+      this.prisma.task.count({ where: { userId, status: 'done' } }),
     ]);
 
     const sessions = await this.prisma.pomodoroSession.findMany({
-      where: { type: 'work', completed: true },
+      where: { userId, type: 'work', completed: true },
       select: { startTime: true, endTime: true },
     });
 
@@ -33,7 +33,7 @@ export class TrackingService {
     };
   }
 
-  async getDashboard() {
+  async getDashboard(userId: string) {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const startOfWeek = new Date(startOfDay);
@@ -41,13 +41,13 @@ export class TrackingService {
 
     const [today, thisWeek, byTask] = await Promise.all([
       this.prisma.pomodoroSession.count({
-        where: { type: 'work', completed: true, startTime: { gte: startOfDay } },
+        where: { userId, type: 'work', completed: true, startTime: { gte: startOfDay } },
       }),
       this.prisma.pomodoroSession.count({
-        where: { type: 'work', completed: true, startTime: { gte: startOfWeek } },
+        where: { userId, type: 'work', completed: true, startTime: { gte: startOfWeek } },
       }),
       this.prisma.task.findMany({
-        where: { pomodoroCount: { gt: 0 } },
+        where: { userId, pomodoroCount: { gt: 0 } },
         select: { id: true, title: true, pomodoroCount: true, estimatedPomodoros: true, status: true },
         orderBy: { pomodoroCount: 'desc' },
         take: 10,

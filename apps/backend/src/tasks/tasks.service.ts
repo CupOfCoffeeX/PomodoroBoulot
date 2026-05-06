@@ -8,52 +8,55 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(userId: string) {
     return this.prisma.task.findMany({
+      where: { userId },
       orderBy: { order: 'asc' },
       include: { _count: { select: { taskPomodoros: true } } },
     });
   }
 
-  async findOne(id: string) {
-    const task = await this.prisma.task.findUnique({
-      where: { id },
+  async findOne(id: string, userId: string) {
+    const task = await this.prisma.task.findFirst({
+      where: { id, userId },
       include: { taskPomodoros: true },
     });
     if (!task) throw new NotFoundException(`Task ${id} not found`);
     return task;
   }
 
-  async create(dto: CreateTaskDto) {
-    const maxOrder = await this.prisma.task.aggregate({ _max: { order: true } });
+  async create(dto: CreateTaskDto, userId: string) {
+    const maxOrder = await this.prisma.task.aggregate({
+      _max: { order: true },
+      where: { userId },
+    });
     const order = (maxOrder._max.order ?? -1) + 1;
-    return this.prisma.task.create({ data: { ...dto, order } });
+    return this.prisma.task.create({ data: { ...dto, order, userId } });
   }
 
-  async update(id: string, dto: UpdateTaskDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateTaskDto, userId: string) {
+    await this.findOne(id, userId);
     return this.prisma.task.update({ where: { id }, data: dto });
   }
 
-  async updateStatus(id: string, status: TaskStatus) {
-    await this.findOne(id);
+  async updateStatus(id: string, status: TaskStatus, userId: string) {
+    await this.findOne(id, userId);
     return this.prisma.task.update({ where: { id }, data: { status } });
   }
 
-  async reorder(id: string, newOrder: number) {
-    const task = await this.findOne(id);
+  async reorder(id: string, newOrder: number, userId: string) {
+    const task = await this.findOne(id, userId);
     const oldOrder = task.order;
-
     if (oldOrder === newOrder) return task;
 
     if (newOrder > oldOrder) {
       await this.prisma.task.updateMany({
-        where: { order: { gt: oldOrder, lte: newOrder } },
+        where: { userId, order: { gt: oldOrder, lte: newOrder } },
         data: { order: { decrement: 1 } },
       });
     } else {
       await this.prisma.task.updateMany({
-        where: { order: { gte: newOrder, lt: oldOrder } },
+        where: { userId, order: { gte: newOrder, lt: oldOrder } },
         data: { order: { increment: 1 } },
       });
     }
@@ -61,8 +64,8 @@ export class TasksService {
     return this.prisma.task.update({ where: { id }, data: { order: newOrder } });
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, userId: string) {
+    await this.findOne(id, userId);
     return this.prisma.task.delete({ where: { id } });
   }
 }
