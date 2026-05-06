@@ -112,6 +112,7 @@ npx prisma studio          # Visual DB browser at http://localhost:5555
 npx prisma migrate reset   # Wipe DB and re-run all migrations
 npm run lint               # ESLint
 npm run test               # Jest unit tests
+npx prisma db seed	   # Insert seed user
 
 # Desktop
 cd apps/desktop
