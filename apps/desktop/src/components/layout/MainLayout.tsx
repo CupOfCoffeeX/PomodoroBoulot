@@ -10,6 +10,8 @@ import { useTaskStore } from '@/store/taskStore';
 import { useAuthStore } from '@/store/authStore';
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window';
 
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
 export function MainLayout() {
   const setCompact = useTimerStore((s) => s.setCompact);
   const activeTaskId = useTimerStore((s) => s.activeTaskId);
@@ -54,15 +56,17 @@ export function MainLayout() {
             >
               <LogOut className="h-3.5 w-3.5" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCompact}
-              className="gap-2 text-muted-foreground hover:text-foreground border-border/60 hover:border-border"
-            >
-              <Minimize2 className="h-3.5 w-3.5" />
-              Widget
-            </Button>
+            {isTauri && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCompact}
+                className="gap-2 text-muted-foreground hover:text-foreground border-border/60 hover:border-border"
+              >
+                <Minimize2 className="h-3.5 w-3.5" />
+                Widget
+              </Button>
+            )}
           </div>
         </div>
 
