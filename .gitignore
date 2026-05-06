@@ -1,1 +1,14 @@
+node_modules/
+dist/
+.env
+*.local
 CLAUDE.md
+# Rust / Tauri
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
+# NestJS
+apps/backend/dist/
+
+# DB
+postgres_data/
