@@ -17,7 +17,7 @@ export function MainLayout() {
   async function handleCompact() {
     try {
       const win = getCurrentWindow();
-      await win.setSize(new LogicalSize(320, 130));
+      await win.setSize(new LogicalSize(420, 96));
       await win.setAlwaysOnTop(true);
       await win.setDecorations(false);
     } catch {
@@ -27,26 +27,41 @@ export function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background rounded-lg overflow-hidden">
       {/* Left — Timer panel */}
-      <div className="flex flex-col items-center justify-center w-[380px] flex-shrink-0 p-8 gap-6">
-        <div className="flex w-full justify-end">
-          <Button variant="ghost" size="icon" onClick={handleCompact} title="Compact mode">
-            <Minimize2 className="h-4 w-4" />
+      <div className="flex flex-col items-center w-[380px] flex-shrink-0 p-8 gap-6">
+        {/* Top bar */}
+        <div className="flex w-full items-center justify-between">
+          <span className="text-sm font-semibold text-foreground/80 tracking-wide">
+            PomodoroBoulot
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCompact}
+            className="gap-2 text-muted-foreground hover:text-foreground border-border/60 hover:border-border"
+          >
+            <Minimize2 className="h-3.5 w-3.5" />
+            Widget
           </Button>
         </div>
 
-        <TimerDisplay />
-        <TimerControls />
+        {/* Timer centered in remaining space */}
+        <div className="flex flex-col items-center gap-6 flex-1 justify-center">
+          <TimerDisplay />
+          <TimerControls />
 
-        {activeTask ? (
-          <div className="text-center px-4">
-            <p className="text-xs text-muted-foreground mb-1">Current task</p>
-            <p className="text-sm font-medium truncate max-w-[280px]">{activeTask.title}</p>
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground">No task selected</p>
-        )}
+          {activeTask ? (
+            <div className="text-center px-4 max-w-[280px]">
+              <p className="text-[11px] text-muted-foreground mb-1 uppercase tracking-wider">
+                Current task
+              </p>
+              <p className="text-sm font-medium truncate">{activeTask.title}</p>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">No task selected — pick one →</p>
+          )}
+        </div>
       </div>
 
       <Separator orientation="vertical" />

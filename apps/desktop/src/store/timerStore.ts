@@ -23,7 +23,7 @@ interface TimerState {
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   reset: () => Promise<void>;
-  skip: () => void;
+  skip: () => Promise<void>;
   setActiveTask: (taskId: string | null) => void;
   setCompact: (compact: boolean) => void;
   _tick: () => void;
@@ -44,10 +44,15 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   start: async () => {
     const { mode, activeTaskId, _tick } = get();
     try {
-      const session = await api.pomodoro.start({
-        type: mode,
-        taskId: activeTaskId ?? undefined,
-      });
+      let session;
+      try {
+        session = await api.pomodoro.start({ type: mode, taskId: activeTaskId ?? undefined });
+      } catch {
+        // Backend may have a dangling session from a previous skip/crash — auto-recover
+        const current = await api.pomodoro.current().catch(() => null);
+        if (current) await api.pomodoro.reset(current.id).catch(() => {});
+        session = await api.pomodoro.start({ type: mode, taskId: activeTaskId ?? undefined });
+      }
       const id = setInterval(_tick, 1000);
       set({ isRunning: true, isPaused: false, currentSessionId: session.id, _intervalId: id });
     } catch (e) {
@@ -78,6 +83,10 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (_intervalId) clearInterval(_intervalId);
     if (currentSessionId) {
       await api.pomodoro.reset(currentSessionId).catch(console.error);
+    } else {
+      // No local session id — still clean up any dangling backend session
+      const current = await api.pomodoro.current().catch(() => null);
+      if (current) await api.pomodoro.reset(current.id).catch(console.error);
     }
     set({
       isRunning: false,
@@ -88,9 +97,13 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     });
   },
 
-  skip: () => {
-    const { _intervalId, mode, cycleCount } = get();
+  skip: async () => {
+    const { _intervalId, currentSessionId, mode, cycleCount } = get();
     if (_intervalId) clearInterval(_intervalId);
+    // Always tell the backend to abandon the current session before switching phase
+    if (currentSessionId) {
+      await api.pomodoro.reset(currentSessionId).catch(console.error);
+    }
     const nextMode = getNextMode(mode, cycleCount);
     const nextCycle = mode === 'work' ? (cycleCount + 1) % 4 : cycleCount;
     set({
