@@ -19,7 +19,9 @@
     "paths": {
       "@/*": ["../desktop/src/*"],
       "@tauri-apps/api/window": ["./src/stubs/tauri-window.ts"],
-      "@tauri-apps/plugin-notification": ["./src/stubs/tauri-notification.ts"]
+      "@tauri-apps/plugin-notification": ["./src/stubs/tauri-notification.ts"],
+      "zustand": ["./node_modules/zustand"],
+      "zustand/*": ["./node_modules/zustand/*"]
     }
   },
   "include": ["src", "../desktop/src"]
