@@ -1,27 +1,23 @@
 import { useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useTaskStore } from '@/store/taskStore';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { LoginScreen } from '@/components/auth/LoginScreen';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from '@/components/ui/toast';
 import { initNotifications } from '@/lib/notifications';
+import { LandingPage } from './pages/LandingPage';
+import { AppPage } from './pages/AppPage';
 
 export default function App() {
-  const user = useAuthStore((s) => s.user);
-  const fetchTasks = useTaskStore((s) => s.fetch);
-
   useEffect(() => {
     initNotifications().catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (user) fetchTasks();
-  }, [user, fetchTasks]);
-
   return (
-    <>
-      {!user ? <LoginScreen /> : <MainLayout />}
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/app" element={<AppPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
       <ToastContainer />
-    </>
+    </BrowserRouter>
   );
 }
