@@ -10,7 +10,11 @@ import { V1Module } from './v1/v1.module';
 class StatusController {
   @Get()
   status() {
-    return { status: 'ok', port: process.env.PORT ?? 3000 };
+    return {
+      status: 'ok',
+      port: process.env.PORT ?? 3000,
+      version: process.env.APP_VERSION ?? 'unknown',
+    };
   }
 }
 

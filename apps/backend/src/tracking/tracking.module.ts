@@ -7,5 +7,6 @@ import { TrackingController } from './tracking.controller';
   imports: [AuthModule],
   controllers: [TrackingController],
   providers: [TrackingService],
+  exports: [TrackingService],
 })
 export class TrackingModule {}
