@@ -34,13 +34,14 @@
 **Goal:** Introduce a `/api/v1/` prefix for a clean versioned API without breaking the current routes (used by the desktop app in production).
 
 ### Route versioning
-- Add a global prefix `/api/v1` to all NestJS controllers via `app.setGlobalPrefix('api/v1')` in `main.ts`.
-- The old routes (no prefix) can remain active during the transition period via a compat flag, then be dropped in V2.
-- Update `VITE_API_URL` in clients to `https://your-backend.onrender.com/api/v1`.
+- New features are implemented exclusively under `/api/v1/` (NestJS versioning via `enableVersioning`).
+- Old routes (no prefix) stay untouched — desktop app in production keeps working.
+- Once all current features are migrated to V1, old routes are dropped (V2 scope).
+- Clients targeting new features use `VITE_API_URL/api/v1`.
 
 ### Self-Registration
 - New endpoint: `POST /api/v1/auth/register` — open, no admin required.
-- Rate-limit registration (1 account per IP per hour) to prevent abuse.
+- Open to all — no invite code, no admin approval required.
 - Admin-only account creation (`POST /api/v1/auth/admin/create-user`) remains for creating accounts with forced role.
 - `RegisterDto`: `{ username: string, password: string }` — role defaults to `user`.
 - Password rules (validated server-side via `class-validator`):
@@ -89,6 +90,7 @@
 - Landing page is a standalone page, no auth required.
 - Design: same Shadcn + Tailwind tokens as the app for visual consistency.
 - Fully responsive (mobile + desktop).
+- Vercel rewrite config (`/* → /index.html`) documented and applied at deploy time.
 
 ---
 

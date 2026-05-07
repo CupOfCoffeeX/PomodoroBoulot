@@ -2,6 +2,48 @@
 
 Base URL: `http://localhost:3000`
 
+All protected routes require `Authorization: Bearer <token>` header.
+
+---
+
+## Auth (legacy — no prefix)
+
+> Used by the desktop app in production. Kept for backward compat — will be migrated to `/api/v1/` in V2.
+
+| Method | Endpoint | Auth | Body | Description |
+|--------|----------|------|------|-------------|
+| `POST` | `/auth/login` | — | `{ username, password }` | Login, returns `{ token, user }` |
+| `POST` | `/auth/register` | JWT + Admin | `{ username, password, role? }` | Admin-only account creation |
+| `GET` | `/auth/me` | JWT | — | Returns current user from token |
+
+---
+
+## API V1 — Auth
+
+> New versioned routes. Self-registration is open to all.
+
+Base prefix: `/api/v1`
+
+| Method | Endpoint | Auth | Body | Description |
+|--------|----------|------|------|-------------|
+| `POST` | `/api/v1/auth/login` | — | `{ username, password }` | Login, returns `{ token, user }` |
+| `POST` | `/api/v1/auth/register` | — | `{ username, password }` | Open self-registration, role defaults to `user` |
+| `POST` | `/api/v1/auth/admin/create-user` | JWT + Admin | `{ username, password, role? }` | Admin-only, allows role selection |
+| `GET` | `/api/v1/auth/me` | JWT | — | Returns current user from token |
+
+### Auth response (`login` / `register`)
+
+```json
+{
+  "token": "JWT string",
+  "user": { "id": "cuid", "username": "string", "role": "user | admin" }
+}
+```
+
+### Password rules
+- Minimum 8 characters
+- Username: 3–30 characters
+
 ---
 
 ## Tasks
