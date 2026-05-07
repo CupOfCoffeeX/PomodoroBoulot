@@ -8,6 +8,7 @@ interface AuthState {
   token: string | null;
   user: AuthUser | null;
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -35,6 +36,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.message ?? 'Identifiants incorrects');
+    }
+    const { token, user } = await res.json() as { token: string; user: AuthUser };
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    set({ token, user });
+  },
+
+  register: async (username, password) => {
+    const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+    const res = await fetch(`${BASE}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message ?? 'Inscription échouée');
     }
     const { token, user } = await res.json() as { token: string; user: AuthUser };
     localStorage.setItem(TOKEN_KEY, token);
