@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { PomodoroModule } from './pomodoro/pomodoro.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { V1Module } from './v1/v1.module';
 
 @Controller('status')
 class StatusController {
@@ -14,7 +15,7 @@ class StatusController {
 }
 
 @Module({
-  imports: [PrismaModule, AuthModule, TasksModule, PomodoroModule, TrackingModule],
+  imports: [PrismaModule, AuthModule, TasksModule, PomodoroModule, TrackingModule, V1Module],
   controllers: [StatusController],
 })
 export class AppModule {}

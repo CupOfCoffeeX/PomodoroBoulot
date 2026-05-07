@@ -40,4 +40,11 @@ export class AuthService {
 
     return { id: user.id, username: user.username, role: user.role };
   }
+
+  // V1 self-registration — returns token for immediate auto-login
+  async registerAndSign(username: string, password: string) {
+    const user = await this.register({ username, password, role: 'user' });
+    const token = this.jwt.sign({ sub: user.id, username: user.username, role: user.role });
+    return { token, user };
+  }
 }
