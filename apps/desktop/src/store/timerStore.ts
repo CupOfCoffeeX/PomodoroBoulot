@@ -6,7 +6,7 @@ import { getSessionContent, sendSessionNotification } from '@/lib/notifications'
 
 const DURATIONS: Record<TimerMode, number> = {
   work: 25 * 60,
-  short_break: 5 * 60,
+  short_break: 5 * 1,
   long_break: 30 * 60,
 };
 

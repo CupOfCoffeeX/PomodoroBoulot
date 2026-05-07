@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { api } from '@/lib/api';
 import type { Task, TaskStatus } from '@/types';
 import { useTimerStore } from './timerStore';
+import { useToastStore } from './toastStore';
 
 interface TaskState {
   tasks: Task[];
@@ -54,6 +55,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     // have isolated JS contexts — the timer may be running in the other window.
     if (status === 'done') {
       const { activeTaskId, setActiveTask } = useTimerStore.getState();
+      let pomodoroAdded = false;
+
       if (activeTaskId === id) {
         const updated = await api.tasks.addPomodoro(id).catch((e) => {
           console.error('[taskStore] addPomodoro failed:', e);
@@ -61,9 +64,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         });
         if (updated) {
           set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? updated : t)) }));
+          pomodoroAdded = true;
         }
         setActiveTask(null);
       }
+
+      useToastStore.getState().push({
+        icon: '✅',
+        title: task.title,
+        message: pomodoroAdded ? 'Tâche terminée · 🍅 pomodoro comptabilisé' : 'Tâche terminée !',
+      });
     }
   },
 
