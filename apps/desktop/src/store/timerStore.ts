@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
 import type { TimerMode } from '@/types';
+import { useToastStore } from './toastStore';
+import { getSessionContent, sendSessionNotification } from '@/lib/notifications';
 
 const DURATIONS: Record<TimerMode, number> = {
   work: 25 * 60,
@@ -156,8 +158,22 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       currentSessionId: null,
       _intervalId: null,
     });
+
+    // Notifications
+    const content = getSessionContent(mode, nextMode);
+    sendSessionNotification(content.title, content.message).catch(() => {});
+    useToastStore.getState().push({
+      icon: content.icon,
+      title: content.title,
+      message: content.message,
+      action: {
+        label: content.actionLabel,
+        onClick: () => useTimerStore.getState().start(),
+      },
+    });
   },
 }));
+
 
 function getNextMode(current: TimerMode, cycleCount: number): TimerMode {
   if (current !== 'work') return 'work';
