@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Github, Star, GitFork } from 'lucide-react';
+import {
+  Github, Star, GitFork,
+  Timer, ListTodo, Bell, Users, Minimize2, Globe,
+  type LucideIcon,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInView } from '../hooks/useInView';
 import { useGitHubRepo } from '../hooks/useGitHubRepo';
@@ -10,6 +14,8 @@ const GITHUB_SLUG = 'CupOfCoffeeX/PomodoroBoulot';
 const GITHUB_URL = 'https://github.com/CupOfCoffeeX/PomodoroBoulot';
 
 const COFFEE_URL = 'https://buymeacoffee.com/sraebischl';
+
+const FEATURE_ICONS: LucideIcon[] = [Timer, ListTodo, Bell, Users, Minimize2, Globe];
 
 // ─── Animation wrapper ────────────────────────────────────────────────────────
 
@@ -170,15 +176,20 @@ export function LandingPage() {
           </FadeUp>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {T.features.items.map((item, i) => (
-              <FadeUp key={i} delay={i * 80}>
-                <div className="group h-full border border-border/60 bg-card rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border cursor-default">
-                  <div className="text-3xl mb-4">{item.icon}</div>
-                  <h3 className="font-semibold text-base mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
-              </FadeUp>
-            ))}
+            {T.features.items.map((item, i) => {
+              const Icon = FEATURE_ICONS[i];
+              return (
+                <FadeUp key={i} delay={i * 80}>
+                  <div className="group h-full border border-border/60 bg-card rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-border cursor-default">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-base mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                </FadeUp>
+              );
+            })}
           </div>
         </div>
       </section>
