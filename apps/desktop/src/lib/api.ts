@@ -42,6 +42,8 @@ export const api = {
       request<Task>(`/tasks/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     reorder: (id: string, order: number) =>
       request<Task>(`/tasks/${id}/order`, { method: 'PATCH', body: JSON.stringify({ order }) }),
+    addPomodoro: (id: string) =>
+      request<Task>(`/tasks/${id}/add-pomodoro`, { method: 'POST' }),
     delete: (id: string) => request<void>(`/tasks/${id}`, { method: 'DELETE' }),
   },
 

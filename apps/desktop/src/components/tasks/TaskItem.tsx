@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Trash2, ChevronUp, ChevronDown, Check, Circle, Loader, Target } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Trash2, ChevronUp, ChevronDown, Check, Circle, Loader, Target, ChevronDown as ExpandIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useTaskStore } from '@/store/taskStore';
@@ -34,6 +34,14 @@ export function TaskItem({ task, isFirst, isLast }: Props) {
   const { updateStatus, moveUp, moveDown, remove } = useTaskStore();
   const { activeTaskId, setActiveTask } = useTimerStore();
   const [removing, setRemoving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const titleRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (el) setIsTruncated(el.scrollWidth > el.offsetWidth);
+  }, [task.title]);
 
   const isActive = activeTaskId === task.id;
 
@@ -61,13 +69,26 @@ export function TaskItem({ task, isFirst, isLast }: Props) {
       </button>
 
       <div className="flex-1 min-w-0">
-        <span
-          className={`text-sm leading-tight block truncate ${
-            task.status === 'done' ? 'line-through text-muted-foreground' : ''
-          }`}
-        >
-          {task.title}
-        </span>
+        <div className="flex items-start gap-1 min-w-0">
+          <span
+            ref={titleRef}
+            className={`text-sm leading-tight ${
+              expanded ? 'whitespace-normal break-words' : 'truncate block'
+            } ${task.status === 'done' ? 'line-through text-muted-foreground' : ''}`}
+          >
+            {task.title}
+          </span>
+          {(isTruncated || expanded) && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+            >
+              <ExpandIcon
+                className={`h-3 w-3 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              />
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-0.5">
           <Badge variant={STATUS_VARIANT[task.status]} className="text-[10px] py-0">
             {task.status.replace('_', ' ')}

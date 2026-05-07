@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
 import type { Task, TaskStatus } from '@/types';
+import { useTimerStore } from './timerStore';
 
 interface TaskState {
   tasks: Task[];
@@ -47,6 +48,23 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   updateStatus: async (id, status) => {
     const task = await api.tasks.updateStatus(id, status);
     set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? task : t)) }));
+
+    // Task marked done while it's the active pomodoro task → count the pomodoro immediately
+    // Note: we check activeTaskId only (no isRunning check) because compact and main windows
+    // have isolated JS contexts — the timer may be running in the other window.
+    if (status === 'done') {
+      const { activeTaskId, setActiveTask } = useTimerStore.getState();
+      if (activeTaskId === id) {
+        const updated = await api.tasks.addPomodoro(id).catch((e) => {
+          console.error('[taskStore] addPomodoro failed:', e);
+          return null;
+        });
+        if (updated) {
+          set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? updated : t)) }));
+        }
+        setActiveTask(null);
+      }
+    }
   },
 
   moveUp: async (id) => {
