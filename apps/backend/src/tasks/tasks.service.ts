@@ -64,6 +64,14 @@ export class TasksService {
     return this.prisma.task.update({ where: { id }, data: { order: newOrder } });
   }
 
+  async addPomodoro(id: string, userId: string) {
+    await this.findOne(id, userId);
+    return this.prisma.task.update({
+      where: { id },
+      data: { pomodoroCount: { increment: 1 } },
+    });
+  }
+
   async remove(id: string, userId: string) {
     await this.findOne(id, userId);
     return this.prisma.task.delete({ where: { id } });

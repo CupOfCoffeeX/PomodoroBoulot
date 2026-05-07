@@ -45,6 +45,12 @@ export class TasksV1Controller {
     return this.tasksService.reorder(id, order, user.sub);
   }
 
+  @Post(':id/add-pomodoro')
+  @HttpCode(HttpStatus.OK)
+  addPomodoro(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.tasksService.addPomodoro(id, user.sub);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
