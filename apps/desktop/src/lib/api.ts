@@ -1,6 +1,6 @@
 import type { AuthUser, Dashboard, PomodoroSession, SessionType, Stats, Task, TaskStatus } from '@/types';
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 function authHeaders(): Record<string, string> {
   const token = localStorage.getItem('pb_token');
@@ -28,7 +28,7 @@ export const api = {
         body: JSON.stringify({ username, password }),
       }),
     register: (data: { username: string; password: string; role?: 'user' | 'admin' }) =>
-      request<AuthUser>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+      request<AuthUser>('/auth/admin/create-user', { method: 'POST', body: JSON.stringify(data) }),
     me: () => request<AuthUser>('/auth/me'),
   },
 

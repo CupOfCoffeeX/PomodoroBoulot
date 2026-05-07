@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   ...loadFromStorage(),
 
   login: async (username, password) => {
-    const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+    const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/api/v1`;
     const res = await fetch(`${BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,8 +44,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (username, password) => {
-    const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${BASE}/api/v1/auth/register`, {
+    const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/api/v1`;
+    const res = await fetch(`${BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
