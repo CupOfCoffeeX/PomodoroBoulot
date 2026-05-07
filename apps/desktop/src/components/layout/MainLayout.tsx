@@ -36,7 +36,7 @@ export function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-background rounded-lg overflow-hidden">
+    <div className={`flex h-screen bg-background overflow-hidden${isTauri ? ' rounded-lg' : ''}`}>
       {/* Left — Timer panel */}
       <div className="flex flex-col items-center w-[380px] flex-shrink-0 p-8 gap-6">
         {/* Top bar */}
